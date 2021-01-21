@@ -15,8 +15,8 @@ def get_detail_row(tooltip):
 
 
 def init():
-    # keyword = input("Masukkan keyword untuk google maps : ")
-    keyword = "smk di jakarta"
+    keyword = input("Masukkan keyword untuk google maps : ")
+    # keyword = "smk di jakarta"
 
     link = "https://www.google.com/maps/search/{}".format(keyword)
 
