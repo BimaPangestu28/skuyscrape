@@ -94,25 +94,19 @@ def init():
                         except Exception as identifier:
                             pass
 
-                        print("nama", title)
-                        print("telpon", phone)
-                        print("website", website)
-                        print("alamat", address)
+                        try:
+                            base_url = "http://contact.impianjadinyata.com/api/v1/contacts"
 
-                        base_url = "http://contact.maxcotton.id/api/v1/contacts"
-
-                        print(base_url)
-
-                        response = requests.post(base_url, data={
-                            "name": title if title != "" else "-",
-                            "phone": phone if phone != "" else "-",
-                            "email": "-",
-                            "website": website if website != "" else "-",
-                            "address": address if address != "" else "-",
-                            "tag": keyword
-                        })
-                        print(response)
-                        print(response.json())
+                            response = requests.post(base_url, data={
+                                "name": title if title != "" else "-",
+                                "phone": phone if phone != "" else "-",
+                                "email": "-",
+                                "website": website if website != "" else "-",
+                                "address": address if address != "" else "-",
+                                "tag": keyword
+                            })
+                        except Exception as identifier:
+                            pass
 
                         worksheet.write(row_cell, 0, title)
                         worksheet.write(row_cell, 1, phone)

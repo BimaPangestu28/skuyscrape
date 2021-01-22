@@ -1,3 +1,4 @@
 selenium==3.141.0
 urllib3==1.25.7
 XlsxWriter==1.2.7
+webdriver-manager==3.2.2
