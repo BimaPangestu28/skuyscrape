@@ -10,6 +10,7 @@ import xlsxwriter
 import platform
 import requests
 
+
 def get_detail_row(tooltip):
     return '//div[@data-tooltip="{}"]/div[@class="section-info-line"]/span[@class="section-info-text"]/span[@class="widget-pane-link"]'.format(tooltip)
 
@@ -23,11 +24,11 @@ def init():
     chromeOptions = webdriver.ChromeOptions()
     chromeOptions.add_argument("--start-maximized")
     chromeOptions.add_experimental_option(
-            "prefs", {"intl.accept_languages": "en,en_US"})
+        "prefs", {"intl.accept_languages": "en,en_US"})
 
     driver = webdriver.Chrome(
         executable_path=ChromeDriverManager().install(), chrome_options=chromeOptions)
-    wait = WebDriverWait(driver, 10)
+    wait = WebDriverWait(driver, 6)
     driver.get(link)
 
     # files = open('results/{}.csv'.format(keyword), 'a+')
@@ -43,96 +44,111 @@ def init():
     while True:
         try:
             time.sleep(2)
+            scroll = 0
             index = 0
             rows = wait.until(presence_of_all_elements_located(
-                (By.XPATH, '//*[@class="section-result"]')))
+                (By.XPATH, '//*[@id="pane"]/div/div[1]/div/div/div[4]/div[1]/div')))
+
+            if len(rows) < 20 and scroll < 4:
+                driver.execute_script(
+                    'document.getElementsByClassName("section-scrollbox")[1].scrollTo(0,document.getElementsByClassName("section-scrollbox")[1].scrollHeight)')
+                scroll += 1
+                continue
 
             for i in range(len(rows)):
                 try:
                     rows = wait.until(presence_of_all_elements_located(
-                        (By.XPATH, '//*[@class="section-result"]')))
+                        (By.XPATH, '//*[@id="pane"]/div/div[1]/div/div/div[4]/div[1]/div')))
 
                     for idx, row in enumerate(rows):
-                        if idx != index:
-                            continue
+                        if idx == index:
+                            row.click()
+                            title = ""
+                            phone = ""
+                            address = ""
+                            website = ""
 
-                        row.click()
-                        title = ""
-                        phone = ""
-                        address = ""
-                        website = ""
+                            try:
+                                xpath = '//*[@id="pane"]/div/div[1]/div/div/div[2]/div[1]/div[1]/div[1]/h1/span[1]'
 
-                        try:
-                            xpath = '//*[@id="pane"]/div/div[1]/div/div/div[2]/div[1]/div[1]/div[1]/h1/span[1]'
+                                title = wait.until(
+                                    presence_of_element_located((By.XPATH, xpath))).text
+                            except Exception as identifier:
+                                pass
 
-                            title = wait.until(
-                                presence_of_element_located((By.XPATH, xpath))).text
-                        except Exception as identifier:
-                            pass
+                            print("Memproses data dengan nama {}".format(title))
 
-                        try:
-                            xpath = '//*[@id="pane"]/div/div[1]/div/div/div[8]/button/div/div[2]/div[1]'
+                            try:
+                                if title != "":
+                                    try:
+                                        xpath = '//*[@id="pane"]/div/div[1]/div/div/div[7]/div[1]/button/div[1]/div[2]/div[1]'
 
-                            address = wait.until(
-                                presence_of_element_located((By.XPATH, xpath))).text
-                        except Exception as identifier:
-                            pass
+                                        address = wait.until(
+                                            presence_of_element_located((By.XPATH, xpath))).text
+                                    except Exception as identifier:
+                                        pass
 
-                        try:
-                            xpath = '//*[@id="pane"]/div/div[1]/div/div/div[10]/button/div/div[2]/div[1]'
+                                    try:
+                                        xpath = '//*[@id="pane"]/div/div[1]/div/div/div[7]/div[3]/button/div[1]/div[2]/div[1]'
 
-                            website = wait.until(
-                                presence_of_element_located((By.XPATH, xpath))).text
-                        except Exception as identifier:
-                            pass
+                                        website = wait.until(
+                                            presence_of_element_located((By.XPATH, xpath))).text
+                                    except Exception as identifier:
+                                        pass
 
-                        try:
-                            xpath = '//*[@id="pane"]/div/div[1]/div/div/div[11]/button/div/div[2]/div[1]'
+                                    try:
+                                        xpath = '//*[@id="pane"]/div/div[1]/div/div/div[7]/div[4]/button/div[1]/div[2]/div[1]'
 
-                            phone = wait.until(
-                                presence_of_element_located((By.XPATH, xpath))).text
-                        except Exception as identifier:
-                            pass
+                                        phone = wait.until(
+                                            presence_of_element_located((By.XPATH, xpath))).text
+                                    except Exception as identifier:
+                                        pass
 
-                        try:
-                            base_url = "http://contact.impianjadinyata.com/api/v1/contacts"
+                                    # try:
+                                    #     base_url = "http://contact.impianjadinyata.com/api/v1/contacts"
 
-                            response = requests.post(base_url, data={
-                                "name": title if title != "" else "-",
-                                "phone": phone if phone != "" else "-",
-                                "email": "-",
-                                "website": website if website != "" else "-",
-                                "address": address if address != "" else "-",
-                                "tag": keyword
-                            })
-                        except Exception as identifier:
-                            pass
+                                    #     response = requests.post(base_url, data={
+                                    #         "name": title if title != "" else "-",
+                                    #         "phone": phone if phone != "" else "-",
+                                    #         "email": "-",
+                                    #         "website": website if website != "" else "-",
+                                    #         "address": address if address != "" else "-",
+                                    #         "tag": keyword
+                                    #     })
+                                    # except Exception as identifier:
+                                    #     pass
 
-                        worksheet.write(row_cell, 0, title)
-                        worksheet.write(row_cell, 1, phone)
-                        worksheet.write(row_cell, 2, website)
-                        worksheet.write(row_cell, 3, address)
+                                    worksheet.write(row_cell, 0, title)
+                                    worksheet.write(row_cell, 1, phone)
+                                    worksheet.write(row_cell, 2, website)
+                                    worksheet.write(row_cell, 3, address)
 
-                        print("Data with name {} has been saved".format(title))
+                                    print(
+                                        "Data with name {} has been saved".format(title))
 
-                        row_cell += 1
-                        index += 1
+                                    row_cell += 1
+                                    wait.until(presence_of_element_located(
+                                        (By.XPATH, '//*[@id="omnibox-singlebox"]/div[1]/div[3]/div/div[1]/div/div/button'))).click()
 
-                        wait.until(presence_of_element_located(
-                            (By.CLASS_NAME, "section-back-to-list-button"))).click()
+                                    time.sleep(2)
+                            except Exception as identifier:
+                                pass
 
-                        time.sleep(2)
+                            index += 1
                 except Exception as identifier:
-                    # print (identifier)
+                    # print(identifier)
                     pass
 
             wait.until(presence_of_element_located(
-                (By.XPATH, '//*[@aria-label="Halaman berikutnya"]'))).click()
+                (By.XPATH, '//*[@id="ppdPk-Ej1Yeb-LgbsSe-tJiF1e"]'))).click()
+
+            scroll = 0
         except Exception as identifier:
-            print(identifier)
+            print(str(identifier))
             break
 
     workbook.close()
+
 
 if __name__ == "__main__":
     # time.sleep(1)
